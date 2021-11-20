@@ -1,0 +1,4 @@
+python-telegram-bot
+telegram
+numpy
+python-dotenv
