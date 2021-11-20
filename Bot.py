@@ -1,11 +1,25 @@
 import logging
 import matlab.engine
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ConversationHandler
+from io import StringIO 
+import sys
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
-eng = matlab.engine.start_matlab()
+GENDER, PHOTO, LOCATION, BIO = range(4)
+
+class Capturing(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio    # free up some memory
+        sys.stdout = self._stdout
+
 class Bot:
 
     # Constructor de nuestra clase.
@@ -35,13 +49,9 @@ class Bot:
 Hola, es un gusto poder ayudarte, mis comandos son:
 *Funciones:*
 \- /start: Inicia el bot
-
 \- /f1: Recibe los coeficientes del polinomio característico asociado a una relación de re-currencia lineal, homogénea, con coeficientes constantes, de grado k y muestra cuál sería la forma de la solución según el teorema correspondiente.
-
 \- /f2: Muestra la expresión con los valores de las constantes (c0,c1, . . . ,ck) y la solución de la relación de recurrencia
-
 \- /f3: Dado  un  sitio  web  estatico, se implementa un modelo de cadenas de Markov para generar un texto ficticio
-
 \- /f4: Genera un grafo una vez se le introduzcan los siguienters datos:
     \- E: Número de aristas\.
     \- V: Número de vértices\.
@@ -57,27 +67,69 @@ Hola, es un gusto poder ayudarte, mis comandos son:
         # Enviar una descripción cualquieray los botones para escoger.
         update.message.reply_text(texto)
 
-    def f1(self, update, context):
+    def f1_input(self, update, context):
         logger.info("El usuario ha solicitado función generadora.")
         # Recibimos la solicitud del servidor.
         query = update.callback_query
         query.message.reply_text('Digite la ogf = f(x) = ')
+        return 0
+    
+    def f1(self, update, context):
         ogf = update.message.text
-        print(ogf)
-        eng.FGO(ogf)
-        
+        # La libreria no envía inputs como los necesita matlab, por ende no funciona.
+        # eng.FGO(ogf)
+        script = f"""clc;
+syms k n x
+orden=12;
+ogf = {ogf}
+t=taylor(ogf,'order',orden);
 
-    def f2(self, update, context):
+[sucesion, potencias]=coeffs(t,'All');
+sucesion=fliplr(sucesion);
+potencias=fliplr(potencias);
+n=0:orden-1
+potencias
+sucesion
+        """
+        self.crearfun(script, "FGO")
+        eng = matlab.engine.start_matlab()
+        with Capturing() as output:
+            eng.FGO(nargout=0)
+        update.message.reply_text(output)
+        return ConversationHandler.END
+
+    def crearfun(self, script, nombre):
+        with open(f"{nombre}.m","w+") as f:
+            f.write(script)    
+
+    def f2_input_RR(self, update, context):
         logger.info("El usuario ha solicitado su información.")
         # Recibimos la solicitud del servidor.
+        
         query = update.callback_query
         query.message.reply_text('Digita la RR=[cn;-cn1;-cn2;...;-cnk]=')
-        RR = update.message.text
-        query.message.reply_text('Digita las c.i. a=[a0; a1;...,ak]=')
-        a = update.message.text
-        query.message.reply_text('Digita i0=')
-        i0 = update.message.text
-        eng.coef(RR, a, i0)
+        return 0
+
+    def f2_input_a(self, update, context):
+        self.RR = update.message.text
+        
+        # Recibimos la solicitud del servidor.
+        update.message.reply_text('Digita las c.i. a=[a0; a1;...,ak]=')
+
+        return 1
+    
+    def f2_input_i0(self, update, context):
+        self.a = update.message.text
+        
+        update.message.reply_text('Digita i0=')
+        return 2
+    
+    def f2_result(self, update, context):
+        self.i0 = update.message.text
+        # La libreria no envía inputs como los necesita matlab, por ende no funciona.
+        # eng.coef(self.RR, self.a, self.i0)
+        update.message.reply_text(f'el resultado es: {self.RR} {self.a} {self.i0}')
+        return ConversationHandler.END   
 
     def f3(self, update, context):
         query = update.callback_query
@@ -101,8 +153,8 @@ Hola, es un gusto poder ayudarte, mis comandos son:
                 aristas = values[0]
                 vertices = values[1]
                 grado = values[2]
-                img = open("src/images/uninorte.jpg", "rb")
-                # graficarGrafo(aristas, vertices, grado)
+                img = open("src/images/conceit.jpg", "rb")
+                #graficarGrafo(aristas, vertices, grado)
                 update.message.reply_text(f"Número de aristas: {aristas}\nNúmero de vértices: {vertices}\nGrado máximo: {grado}")
                 update.message.reply_text("La imagen se está enviando...")
                 id = update.message.chat.id
@@ -124,5 +176,3 @@ Hola, es un gusto poder ayudarte, mis comandos son:
             self.f3(update, context)
         elif answer == 'op4':
             self.f4(update, context)
-        
-            
