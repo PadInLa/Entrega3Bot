@@ -1,11 +1,15 @@
 import logging
-import matlab.engine
+# import matlab.engine
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ConversationHandler
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
-eng = matlab.engine.start_matlab()
+GENDER, PHOTO, LOCATION, BIO = range(4)
+
+# eng = matlab.engine.start_matlab()
 class Bot:
 
     # Constructor de nuestra clase.
@@ -57,27 +61,51 @@ Hola, es un gusto poder ayudarte, mis comandos son:
         # Enviar una descripción cualquieray los botones para escoger.
         update.message.reply_text(texto)
 
-    def f1(self, update, context):
+    def f1_input(self, update, context):
         logger.info("El usuario ha solicitado función generadora.")
         # Recibimos la solicitud del servidor.
         query = update.callback_query
         query.message.reply_text('Digite la ogf = f(x) = ')
+        return 0
+    
+    def f1(self, update, context):
         ogf = update.message.text
-        print(ogf)
-        eng.FGO(ogf)
+        # eng.FGO(ogf)
+        update.message.reply_text(f'El ogf es: {ogf}')
+        return ConversationHandler.END
         
 
-    def f2(self, update, context):
+    def f2_input_RR(self, update, context):
         logger.info("El usuario ha solicitado su información.")
         # Recibimos la solicitud del servidor.
+        
         query = update.callback_query
         query.message.reply_text('Digita la RR=[cn;-cn1;-cn2;...;-cnk]=')
-        RR = update.message.text
-        query.message.reply_text('Digita las c.i. a=[a0; a1;...,ak]=')
-        a = update.message.text
-        query.message.reply_text('Digita i0=')
-        i0 = update.message.text
-        eng.coef(RR, a, i0)
+        return 0
+
+    def f2_input_a(self, update, context):
+        self.RR = update.message.text
+        
+        # Recibimos la solicitud del servidor.
+        update.message.reply_text('Digita las c.i. a=[a0; a1;...,ak]=')
+
+        return 1
+    
+    def f2_input_i0(self, update, context):
+        self.a = update.message.text
+        
+        update.message.reply_text('Digita i0=')
+        return 2
+    
+    def f2_result(self, update, context):
+        self.i0 = update.message.text
+        # eng.coef(RR, a, i0)
+        update.message.reply_text(f'el resultado es: {self.RR} {self.a} {self.i0}')
+        return ConversationHandler.END
+        
+        
+        
+        
 
     def f3(self, update, context):
         query = update.callback_query
