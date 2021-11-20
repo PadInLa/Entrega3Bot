@@ -1,15 +1,20 @@
 import logging
-import matlab.engine
+# import matlab.engine
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ConversationHandler
+<<<<<<< HEAD
 from io import StringIO 
 import sys
+=======
+
+>>>>>>> c670e13c453c9c8cb3d99a75bdbb827992a7fc30
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
 GENDER, PHOTO, LOCATION, BIO = range(4)
 
+<<<<<<< HEAD
 class Capturing(list):
     def __enter__(self):
         self._stdout = sys.stdout
@@ -20,6 +25,9 @@ class Capturing(list):
         del self._stringio    # free up some memory
         sys.stdout = self._stdout
 
+=======
+# eng = matlab.engine.start_matlab()
+>>>>>>> c670e13c453c9c8cb3d99a75bdbb827992a7fc30
 class Bot:
 
     # Constructor de nuestra clase.
@@ -76,6 +84,7 @@ Hola, es un gusto poder ayudarte, mis comandos son:
     
     def f1(self, update, context):
         ogf = update.message.text
+<<<<<<< HEAD
         # La libreria no envía inputs como los necesita matlab, por ende no funciona.
         # eng.FGO(ogf)
         script = f"""clc;
@@ -102,6 +111,13 @@ sucesion
         with open(f"{nombre}.m","w+") as f:
             f.write(script)    
 
+=======
+        # eng.FGO(ogf)
+        update.message.reply_text(f'El ogf es: {ogf}')
+        return ConversationHandler.END
+        
+
+>>>>>>> c670e13c453c9c8cb3d99a75bdbb827992a7fc30
     def f2_input_RR(self, update, context):
         logger.info("El usuario ha solicitado su información.")
         # Recibimos la solicitud del servidor.
@@ -126,10 +142,20 @@ sucesion
     
     def f2_result(self, update, context):
         self.i0 = update.message.text
+<<<<<<< HEAD
         # La libreria no envía inputs como los necesita matlab, por ende no funciona.
         # eng.coef(self.RR, self.a, self.i0)
         update.message.reply_text(f'el resultado es: {self.RR} {self.a} {self.i0}')
         return ConversationHandler.END   
+=======
+        # eng.coef(RR, a, i0)
+        update.message.reply_text(f'el resultado es: {self.RR} {self.a} {self.i0}')
+        return ConversationHandler.END
+        
+        
+        
+        
+>>>>>>> c670e13c453c9c8cb3d99a75bdbb827992a7fc30
 
     def f3(self, update, context):
         query = update.callback_query
