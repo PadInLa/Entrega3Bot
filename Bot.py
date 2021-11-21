@@ -4,6 +4,14 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ConversationHandler
 from io import StringIO 
 import sys
+import networkx as nx
+import random
+import matplotlib.pyplot as plt
+from bs4 import BeautifulSoup
+import requests
+import re
+import string
+import random
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
@@ -56,56 +64,64 @@ Hola, es un gusto poder ayudarte, mis comandos son:
     \- E: Número de aristas\.
     \- V: Número de vértices\.
     \- K: Grado máximo de los vértices\.
-    _*Comando:*_ /grafo [E, V, K]
-    El comando puede ejecutarse de las siguientes formas:
-    *Ejemplo:*
-    1\. /grafo \[1, 2, 3\]
-    2\. /grafo \(1, 2, 3\)
-    3\. /grafo 1, 2, 3
         """
-
         # Enviar una descripción cualquieray los botones para escoger.
         update.message.reply_text(texto)
 
-    def f1_input(self, update, context):
-        logger.info("El usuario ha solicitado función generadora.")
+    def f1_input_RR(self, update, context):
+        logger.info("El usuario ha solicitado f1.")
         # Recibimos la solicitud del servidor.
+        
         query = update.callback_query
-        query.message.reply_text('Digite la ogf = f(x) = ')
+        query.message.reply_text('Digita la RR=[cn;-cn1;-cn2;...;-cnk]=')
         return 0
-    
-    def f1(self, update, context):
-        ogf = update.message.text
-        # La libreria no envía inputs como los necesita matlab, por ende no funciona.
-        # eng.FGO(ogf)
-        script = f"""function [potencias,sucesion,n]=FGO()
-clc;
-syms k n x
-orden=12;
-ogf = {ogf}
-t=taylor(ogf,'order',orden);
 
-[sucesion, potencias]=coeffs(t,'All');
-sucesion=fliplr(sucesion);
-potencias=fliplr(potencias);
-n=0:orden-1
-potencias
-sucesion
+    def f1_input_a(self, update, context):
+        self.RR1 = update.message.text
+        
+        # Recibimos la solicitud del servidor.
+        update.message.reply_text('Digita las c.i. a=[a0; a1;...,ak]=')
+        return 1
+
+    def f1(self, update, context):
+        self.a1 = update.message.text
+        script = f"""function res=coefpol()
+%% Datos de Entrada
+clc;clear; syms n;syms c0;syms c1;
+RR={self.RR1}
+a={self.a1}
+%% Proceso
+R=roots(RR);
+k=length(a);
+MR=zeros(k);
+for cont=1:k
+    MR(cont,:)=R.^(cont-1);
+end
+b=[c1;c0];
+info_R=tabulate(R);
+t=size(info_R,1);
+m=info_R(:,2);
+%for i=1:t
+
+sol=dot(b,R.^n);
+%% Información de Salida
+sol
+res = [strjoin(arrayfun(@char,sol,'uniform',0))];
 end
         """
-        self.crearfun(script, "FGO")
+        self.crearfun(script, "coefpol")
         eng = matlab.engine.start_matlab()
         with Capturing() as output:
-            eng.FGO(nargout=3, stdout=sys.stdout)
-        update.message.reply_text("\n".join(output))
+            eng.coefpol(nargout=1, stdout=sys.stdout)
+        update.message.reply_text(output)
         return ConversationHandler.END
-
+    
     def crearfun(self, script, nombre):
         with open(f"{nombre}.m","w+") as f:
             f.write(script)    
 
     def f2_input_RR(self, update, context):
-        logger.info("El usuario ha solicitado su información.")
+        logger.info("El usuario ha solicitado f2.")
         # Recibimos la solicitud del servidor.
         
         query = update.callback_query
@@ -128,43 +144,128 @@ end
     
     def f2_result(self, update, context):
         self.i0 = update.message.text
-        # La libreria no envía inputs como los necesita matlab, por ende no funciona.
-        # eng.coef(self.RR, self.a, self.i0)
-        update.message.reply_text(f'el resultado es: {self.RR} {self.a} {self.i0}')
-        return ConversationHandler.END   
+        script = f"""function sol=coef()
+%% Datos de Entrada
+clc;clear all;syms n;
+RR={self.RR}
+a={self.a}
+i0={self.i0}
+%% Proceso
+R=roots(RR);
+k=length(a);
+MR=zeros(k);
+for cont=1:k
+    MR(cont,:)=R.^(i0+cont-1);
+end
+b=MR\\a;
+info_R=tabulate(R);
+t=size(info_R,1);
+m=info_R(:,2);
+%for i=1:t
+
+sol=dot(b,R.^n);
+%% Información de Salida
+sol
+end
+        """
+        self.crearfun(script, "coef")
+        eng = matlab.engine.start_matlab()
+        with Capturing() as output:
+            eng.coef(nargout=1, stdout=sys.stdout)
+        update.message.reply_text("\n".join(output))
+        return ConversationHandler.END
+
+    def f3_input(self, update, context):
+        logger.info("El usuario ha solicitado f3.")
+        # Recibimos la solicitud del servidor.
+        
+        query = update.callback_query
+        query.message.reply_text('Digite la pagina web a consultar: ')
+        return 0
+        
 
     def f3(self, update, context):
+        self.f3 = update.message.text
+
+
+    def f4_input_V(self, update, context):
+        logger.info("El usuario ha solicitado f4.")
+        # Recibimos la solicitud del servidor.
+        
         query = update.callback_query
-        query.answer()
-        name = query.message.chat.first_name
-        id = query.message.chat.id
-        logger.info(f"El usuario {name} ha solicitado una imagen\\.")
-        img = open("src/images/uninorte.jpg", "rb")
-        query.bot.sendPhoto(chat_id=id, photo=img)
+        query.message.reply_text('Digite el número de vertices del grafo: ')
+        return 0
+
+    def f4_input_E(self, update, context):
+        self.V = update.message.text
+        logger.info("El usuario ha solicitado f4.")
+        # Recibimos la solicitud del servidor.
+        
+        update.message.reply_text('Digite el número de aristas: ')
+        return 1
+
+    def f4_input_K(self, update, context):
+        self.E = update.message.text
+        
+        update.message.reply_text('Digite el número de máximo de aristas por vérticas: ')
+        return 2
 
     def f4(self, update, context):
+        self.K = update.message.text
         name = update.message.chat.first_name
         logger.info(f"El usuario {name} ha solicitado un grafo\\.")
-        info = update.message.text
-        info = info.replace("/grafo", "").strip()
-        try:
-            values = eval(info)
-            if len(values) > 3:
-                update.message.reply_text("Hay un error con sus parámetros, revise e intente nuevamente\\.")
-            else:
-                aristas = values[0]
-                vertices = values[1]
-                grado = values[2]
-                img = open("src/images/conceit.jpg", "rb")
-                #graficarGrafo(aristas, vertices, grado)
-                update.message.reply_text(f"Número de aristas: {aristas}\nNúmero de vértices: {vertices}\nGrado máximo: {grado}")
-                update.message.reply_text("La imagen se está enviando...")
-                id = update.message.chat.id
-                update.message.bot.sendPhoto(chat_id=id, photo=img)
-        except Exception as e:
-            logger.info("Ha ocurrido un error generando el grafo.")
-            print(e)
-            update.message.reply_text("Ha ocurrido un error. Por favor revise los parámetros e intente nuevamente.")
+        aristas = self.E
+        vertices = self.V
+        grado = self.K
+        self.hacer_grafo(int(self.V),int(self.E),int(self.K))
+        img = open("src/images/grafo.png", "rb")
+        update.message.reply_text(f"Número de aristas: {aristas}\nNúmero de vértices: {vertices}\nGrado máximo: {grado}")
+        update.message.reply_text("La imagen se está enviando...")
+        id = update.message.chat.id
+        update.message.bot.sendPhoto(chat_id=id, photo=img)
+        return ConversationHandler.END
+    
+    def dibujar_grafos(self, nodes, grafo):
+        nodes = set(nodes)
+        G=nx.Graph()
+
+        for node in nodes:
+            G.add_node(node)
+            
+        for edge in grafo:
+            G.add_edge(edge[0], edge[1])
+
+        pos = nx.shell_layout(G)
+        nx.draw(G, pos)
+
+        plt.savefig("src/images/grafo.png")
+        plt.close()
+
+    def hacer_grafo(self,n,e,k):
+        grafo = []
+        nodes = [] 
+        
+        if (n*k)/2 >= e and n>k: 
+            for node in range(1,n):
+                nodes.append(node)
+                                
+            while len(grafo) < e:  
+                edge = random.randint(0,k-1)
+                nodoA = random.choice(nodes) 
+                
+                if self.ver_peso(nodoA,grafo) <=k and (nodoA,edge) not in grafo and (edge,nodoA) not in grafo:
+                    grafo.append((nodoA,edge))
+                elif self.ver_peso(nodoA,grafo) > k: print(f"{nodoA}excedio el peso")
+
+            self.dibujar_grafos(nodes, grafo)
+
+    def ver_peso(self,node,grafo):
+        cont=0
+        for edge in grafo:
+            if node in edge:
+                cont+=1
+                
+        return cont
 
     def menu_opciones(self, update, context):
         query = update.callback_query

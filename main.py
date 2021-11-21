@@ -22,9 +22,10 @@ def main():
     dp.add_handler(CommandHandler("ayuda", bot.ayuda))
     # Manejar los Callback de menú de ayudas.
     f1_conversation_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(bot.f1_input, pattern="op1")],
+        entry_points=[CallbackQueryHandler(bot.f1_input_RR, pattern="op1")],
         states={
-            0: [MessageHandler(Filters.text & ~Filters.command, bot.f1)],
+            0: [MessageHandler(Filters.text & ~Filters.command, bot.f1_input_a)],
+            1: [MessageHandler(Filters.text & ~Filters.command, bot.f1)],
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
@@ -40,9 +41,27 @@ def main():
         fallbacks=[CommandHandler('cancel', cancel)]
     )
     dp.add_handler(f2_conversation_handler)
-    
-    dp.add_handler(CallbackQueryHandler(bot.menu_opciones, pattern="op3"))
-    dp.add_handler(CallbackQueryHandler(bot.menu_opciones, pattern="op4"))
+
+    f3_conversation_handler = ConversationHandler(
+        entry_points=[CallbackQueryHandler(bot.f3_input, pattern="op3")],
+        states={
+            0: [MessageHandler(Filters.text & ~Filters.command, bot.f3)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    dp.add_handler(f3_conversation_handler)
+
+    f4_conversation_handler = ConversationHandler(
+        entry_points=[CallbackQueryHandler(bot.f4_input_V, pattern="op4")],
+        states={
+            0: [MessageHandler(Filters.text & ~Filters.command, bot.f4_input_E)],
+            1: [MessageHandler(Filters.text & ~Filters.command, bot.f4_input_K)],
+            2: [MessageHandler(Filters.text & ~Filters.command, bot.f4)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    dp.add_handler(f4_conversation_handler)
+
     # Inicir el bot, escuchando las peticiones del servidor.
     updater.start_polling()
     # Mantener el bot ejecutándose hasta que ocurra alguna interrupción.

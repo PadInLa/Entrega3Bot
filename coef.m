@@ -1,6 +1,9 @@
-function coef(RR,a,i0)
+function sol=coef()
 %% Datos de Entrada
 clc;clear all;syms n;
+RR=[1;-1;-2]
+a=[1;1]
+i0=0
 %% Proceso
 R=roots(RR);
 k=length(a);
@@ -15,6 +18,7 @@ m=info_R(:,2);
 %for i=1:t
 
 sol=dot(b,R.^n);
-%% InformaciÃ³n de Salida
+%% Información de Salida
 sol
 end
+        
