@@ -1,8 +1,4 @@
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, Filters, MessageHandler
-<<<<<<< HEAD
-=======
-# from dotenv import load_dotenv
->>>>>>> c670e13c453c9c8cb3d99a75bdbb827992a7fc30
 import os
 from Bot import Bot
 
@@ -24,10 +20,6 @@ def main():
     # Establecer los comandos que escuchará el bot.
     dp.add_handler(CommandHandler("start", bot.start))
     dp.add_handler(CommandHandler("ayuda", bot.ayuda))
-<<<<<<< HEAD
-
-=======
->>>>>>> c670e13c453c9c8cb3d99a75bdbb827992a7fc30
     # Manejar los Callback de menú de ayudas.
     f1_conversation_handler = ConversationHandler(
         entry_points=[CallbackQueryHandler(bot.f1_input, pattern="op1")],
@@ -48,13 +40,7 @@ def main():
         fallbacks=[CommandHandler('cancel', cancel)]
     )
     dp.add_handler(f2_conversation_handler)
-<<<<<<< HEAD
     
-    
-=======
-    # dp.add_handler(CallbackQueryHandler(bot.menu_opciones, pattern="op1"))
-    # dp.add_handler(CallbackQueryHandler(bot.menu_opciones, pattern="op2"))
->>>>>>> c670e13c453c9c8cb3d99a75bdbb827992a7fc30
     dp.add_handler(CallbackQueryHandler(bot.menu_opciones, pattern="op3"))
     dp.add_handler(CallbackQueryHandler(bot.menu_opciones, pattern="op4"))
     # Inicir el bot, escuchando las peticiones del servidor.

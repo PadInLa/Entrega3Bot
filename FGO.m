@@ -1,3 +1,4 @@
+function [potencias,sucesion,n]=FGO()
 clc;
 syms k n x
 orden=12;
@@ -10,4 +11,5 @@ potencias=fliplr(potencias);
 n=0:orden-1
 potencias
 sucesion
+end
         
