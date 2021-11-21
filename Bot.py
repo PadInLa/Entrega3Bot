@@ -6,7 +6,7 @@ from io import StringIO
 import sys
 import networkx as nx
 import random
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plot
 from bs4 import BeautifulSoup
 import requests
 import re
@@ -57,10 +57,14 @@ class Bot:
 Hola, es un gusto poder ayudarte, mis comandos son:
 *Funciones:*
 \- /start: Inicia el bot
-\- /f1: Recibe los coeficientes del polinomio característico asociado a una relación de re-currencia lineal, homogénea, con coeficientes constantes, de grado k y muestra cuál sería la forma de la solución según el teorema correspondiente.
-\- /f2: Muestra la expresión con los valores de las constantes (c0,c1, . . . ,ck) y la solución de la relación de recurrencia
-\- /f3: Dado  un  sitio  web  estatico, se implementa un modelo de cadenas de Markov para generar un texto ficticio
-\- /f4: Genera un grafo una vez se le introduzcan los siguienters datos:
+
+\- Hallar función generadora: Recibe los coeficientes del polinomio característico asociado a una relación de re-currencia lineal, homogénea, con coeficientes constantes, de grado k y muestra cuál sería la forma de la solución según el teorema correspondiente.
+
+\- Hallar función generadora con coeficientes: Muestra la expresión con los valores de las constantes (c0,c1, . . . ,ck) y la solución de la relación de recurrencia
+
+\- Cadenas de Markov: Dado  un  sitio  web  estatico, se implementa un modelo de cadenas de Markov para generar un texto ficticio
+
+\- Crear Grafo: Genera un grafo una vez se le introduzcan los siguienters datos:
     \- E: Número de aristas\.
     \- V: Número de vértices\.
     \- K: Grado máximo de los vértices\.
@@ -106,7 +110,7 @@ m=info_R(:,2);
 sol=dot(b,R.^n);
 %% Información de Salida
 sol
-res = [strjoin(arrayfun(@char,sol,'uniform',0))];
+res = ['[', strjoin(arrayfun(@char,sol,'uniform',0), ', '), ']'];
 end
         """
         self.crearfun(script, "coefpol")
@@ -182,11 +186,58 @@ end
         query = update.callback_query
         query.message.reply_text('Digite la pagina web a consultar: ')
         return 0
-        
 
     def f3(self, update, context):
         self.f3 = update.message.text
+        url = self.f3
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, "html.parser")
 
+        contenido = soup.html
+        texto = []
+        for string in contenido.strings:
+            texto.append(string)
+
+        texto = self.limpiar_texto(str(texto))
+        update.message.reply_text(f"Original: \n\n{texto}", parse_mode="MarkdownV2")
+
+        letras = list(texto)
+        dic = {}
+        for letra in letras:
+            if letra not in dic.keys():
+                dic[letra] = 1
+            else:
+                dic[letra] += 1
+
+        freqa = 0
+        for llave in dic.keys():
+            freq = dic[llave]/len(letras)
+            freqa += freq
+            dic[llave] = [freqa]
+
+        frecuencias = []
+        for llaves in dic.keys():
+            faq = float(str(dic.get(llaves)).replace("[", "").replace("]", ""))
+            frecuencias.append(faq)
+
+        final = []
+        for strings in letras:
+            ran = random.random()
+            prob = min(frecuencias, key=lambda x:abs(x-ran))
+            for cadena in dic.keys():
+                if prob == float(str(dic.get(cadena)).replace("[", "").replace("]", "")):
+                    final.append(str(cadena))
+
+        final = (self.limpiar_texto(str(final))).replace(" ", "")
+        update.message.reply_text(f"Markov K \= 0: \n\n{final}", parse_mode="MarkdownV2")
+        return ConversationHandler.END
+        
+    def limpiar_texto(self, text: str):
+        text = re.sub(r"\\n", "", text)
+        text = re.sub(r'[^\w\s]', '', text)
+        text = re.sub(r'[0-9]+', '', text)
+        text = re.sub(' +', ' ', text)
+        return text
 
     def f4_input_V(self, update, context):
         logger.info("El usuario ha solicitado f4.")
@@ -207,7 +258,7 @@ end
     def f4_input_K(self, update, context):
         self.E = update.message.text
         
-        update.message.reply_text('Digite el número de máximo de aristas por vérticas: ')
+        update.message.reply_text('Digite el número de máximo de aristas por vértices: ')
         return 2
 
     def f4(self, update, context):
@@ -238,8 +289,8 @@ end
         pos = nx.shell_layout(G)
         nx.draw(G, pos)
 
-        plt.savefig("src/images/grafo.png")
-        plt.close()
+        plot.savefig("src/images/grafo.png")
+        plot.close()
 
     def hacer_grafo(self,n,e,k):
         grafo = []

@@ -2,3 +2,8 @@ python-telegram-bot
 telegram
 numpy
 python-dotenv
+bs4
+requests
+random
+matplotlib
+networkx
