@@ -58,13 +58,13 @@ Hola, es un gusto poder ayudarte, mis comandos son:
 *Funciones:*
 \- /start: Inicia el bot
 
-\- Hallar función generadora: Recibe los coeficientes del polinomio característico asociado a una relación de re-currencia lineal, homogénea, con coeficientes constantes, de grado k y muestra cuál sería la forma de la solución según el teorema correspondiente.
+\- /f1: Recibe los coeficientes del polinomio característico asociado a una relación de re-currencia lineal, homogénea, con coeficientes constantes, de grado k y muestra cuál sería la forma de la solución según el teorema correspondiente.
 
-\- Hallar función generadora con coeficientes: Muestra la expresión con los valores de las constantes (c0,c1, . . . ,ck) y la solución de la relación de recurrencia
+\- /f2: Muestra la expresión con los valores de las constantes (c0,c1, . . . ,ck) y la solución de la relación de recurrencia
 
-\- Cadenas de Markov: Dado  un  sitio  web  estatico, se implementa un modelo de cadenas de Markov para generar un texto ficticio
+\- /f3: Dado  un  sitio  web  estatico, se implementa un modelo de cadenas de Markov para generar un texto ficticio
 
-\- Crear Grafo: Genera un grafo una vez se le introduzcan los siguienters datos:
+\- /f4: Genera un grafo una vez se le introduzcan los siguienters datos:
     \- E: Número de aristas\.
     \- V: Número de vértices\.
     \- K: Grado máximo de los vértices\.
@@ -72,12 +72,19 @@ Hola, es un gusto poder ayudarte, mis comandos son:
         # Enviar una descripción cualquieray los botones para escoger.
         update.message.reply_text(texto)
 
-    def f1_input_RR(self, update, context):
+    def f1_input_RR_btn(self, update, context):
         logger.info("El usuario ha solicitado f1.")
         # Recibimos la solicitud del servidor.
         
         query = update.callback_query
         query.message.reply_text('Digita la RR=[cn;-cn1;-cn2;...;-cnk]=')
+        return 0
+
+    def f1_input_RR(self, update, context):
+        logger.info("El usuario ha solicitado f1.")
+        # Recibimos la solicitud del servidor.
+        
+        update.message.reply_text('Digita la RR=[cn;-cn1;-cn2;...;-cnk]=')
         return 0
 
     def f1_input_a(self, update, context):
@@ -124,12 +131,19 @@ end
         with open(f"{nombre}.m","w+") as f:
             f.write(script)    
 
-    def f2_input_RR(self, update, context):
+    def f2_input_RR_btn(self, update, context):
         logger.info("El usuario ha solicitado f2.")
         # Recibimos la solicitud del servidor.
         
         query = update.callback_query
         query.message.reply_text('Digita la RR=[cn;-cn1;-cn2;...;-cnk]=')
+        return 0
+
+    def f2_input_RR(self, update, context):
+        logger.info("El usuario ha solicitado f2.")
+        # Recibimos la solicitud del servidor.
+        
+        update.message.reply_text('Digita la RR=[cn;-cn1;-cn2;...;-cnk]=')
         return 0
 
     def f2_input_a(self, update, context):
@@ -179,12 +193,19 @@ end
         update.message.reply_text("\n".join(output))
         return ConversationHandler.END
 
-    def f3_input(self, update, context):
+    def f3_input_btn(self, update, context):
         logger.info("El usuario ha solicitado f3.")
         # Recibimos la solicitud del servidor.
         
         query = update.callback_query
         query.message.reply_text('Digite la pagina web a consultar: ')
+        return 0
+
+    def f3_input(self, update, context):
+        logger.info("El usuario ha solicitado f3.")
+        # Recibimos la solicitud del servidor.
+        
+        update.message.reply_text('Digite la pagina web a consultar: ')
         return 0
 
     def f3(self, update, context):
@@ -250,12 +271,19 @@ end
         text = re.sub(' +', ' ', text)
         return text
 
-    def f4_input_V(self, update, context):
+    def f4_input_V_btn(self, update, context):
         logger.info("El usuario ha solicitado f4.")
         # Recibimos la solicitud del servidor.
         
         query = update.callback_query
         query.message.reply_text('Digite el número de vertices del grafo: ')
+        return 0
+
+    def f4_input_V(self, update, context):
+        logger.info("El usuario ha solicitado f4.")
+        # Recibimos la solicitud del servidor.
+        
+        update.message.reply_text('Digite el número de vertices del grafo: ')
         return 0
 
     def f4_input_E(self, update, context):
