@@ -199,7 +199,13 @@ end
             texto.append(string)
 
         texto = self.limpiar_texto(str(texto))
-        update.message.reply_text(f"Original: \n\n{texto}", parse_mode="MarkdownV2")
+        with open("src/original.txt", "w", encoding="utf-8") as f:
+            f.write(texto)
+        
+        doc = open("src/original.txt", "rb")
+        chat_id = update.message.chat.id
+        update.message.bot.sendDocument(chat_id=chat_id, document=doc, timeout=300)
+        
 
         letras = list(texto)
         dic = {}
@@ -229,7 +235,12 @@ end
                     final.append(str(cadena))
 
         final = (self.limpiar_texto(str(final))).replace(" ", "")
-        update.message.reply_text(f"Markov K \= 0: \n\n{final}", parse_mode="MarkdownV2")
+        with open("src/markov.txt", "w", encoding="utf-8") as f:
+            f.write(texto)
+        
+        doc = open("src/markov.txt", "rb")
+        chat_id = update.message.chat.id
+        update.message.bot.sendDocument(chat_id=chat_id, document=doc, timeout=300)
         return ConversationHandler.END
         
     def limpiar_texto(self, text: str):
@@ -268,12 +279,14 @@ end
         aristas = self.E
         vertices = self.V
         grado = self.K
-        self.hacer_grafo(int(self.V),int(self.E),int(self.K))
-        img = open("src/images/grafo.png", "rb")
+        if not self.hacer_grafo(int(vertices),int(aristas),int(grado)):
+            chat_id = update.message.chat.id
+            update.message.reply_text("No se pudo generar un grafo con los parametros establecidos\.", parse_mode="MarkdownV2")
+        else:
+            img = self.hacer_grafo(int(vertices),int(aristas),int(grado))
+            chat_id = update.message.chat.id
+            update.message.bot.sendPhoto(chat_id=chat_id, photo=img)  
         update.message.reply_text(f"Número de aristas: {aristas}\nNúmero de vértices: {vertices}\nGrado máximo: {grado}")
-        update.message.reply_text("La imagen se está enviando...")
-        id = update.message.chat.id
-        update.message.bot.sendPhoto(chat_id=id, photo=img)
         return ConversationHandler.END
     
     def dibujar_grafos(self, nodes, grafo):
@@ -290,33 +303,39 @@ end
         nx.draw(G, pos)
 
         plot.savefig("src/images/grafo.png")
+        img = open("src/images/grafo.png", "rb")
         plot.close()
+        return img
 
     def hacer_grafo(self,n,e,k):
         grafo = []
         nodes = [] 
         
-        if (n*k)/2 >= e and n>k: 
-            for node in range(1,n):
+        if (n*k)/2 >= e and n>k/2: 
+            for node in range(n):
                 nodes.append(node)
                                 
             while len(grafo) < e:  
-                edge = random.randint(0,k-1)
+                edge = random.choice(nodes)
                 nodoA = random.choice(nodes) 
-                
-                if self.ver_peso(nodoA,grafo) <=k and (nodoA,edge) not in grafo and (edge,nodoA) not in grafo:
+                pa,pb = self.ver_peso(nodoA,edge,grafo)
+                if nodoA != edge and pa<k and pb<k and (nodoA,edge) not in grafo and (edge,nodoA) not in grafo:
                     grafo.append((nodoA,edge))
-                elif self.ver_peso(nodoA,grafo) > k: print(f"{nodoA}excedio el peso")
 
-            self.dibujar_grafos(nodes, grafo)
+            img = self.dibujar_grafos(nodes, grafo)
+            return img
+        else:
+            return False
 
-    def ver_peso(self,node,grafo):
-        cont=0
+    def ver_peso(self,node1,node2,grafo):
+        cont1=0
+        cont2=0
         for edge in grafo:
-            if node in edge:
-                cont+=1
-                
-        return cont
+            if node1 in edge:
+                cont1+=1
+            if node2 in edge:
+                cont2+=1    
+        return cont1, cont2
 
     def menu_opciones(self, update, context):
         query = update.callback_query
