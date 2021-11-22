@@ -25,7 +25,7 @@ class Capturing(list):
         return self
     def __exit__(self, *args):
         self.extend(self._stringio.getvalue().splitlines())
-        del self._stringio    # free up some memory
+        del self._stringio
         sys.stdout = self._stdout
 
 class Bot:
@@ -117,7 +117,7 @@ end
         eng = matlab.engine.start_matlab()
         with Capturing() as output:
             eng.coefpol(nargout=1, stdout=sys.stdout)
-        update.message.reply_text(output)
+        update.message.reply_text("\n".join(output))
         return ConversationHandler.END
     
     def crearfun(self, script, nombre):
