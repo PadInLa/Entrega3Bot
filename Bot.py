@@ -220,12 +220,7 @@ end
             texto.append(string)
 
         texto = self.limpiar_texto(str(texto))
-        with open("src/original.txt", "w", encoding="utf-8") as f:
-            f.write(texto)
-        
-        doc = open("src/original.txt", "rb")
-        chat_id = update.message.chat.id
-        update.message.bot.sendDocument(chat_id=chat_id, document=doc, timeout=300)
+        update.message.reply_text(f"Original: \n\n{texto}", parse_mode="MarkdownV2")
         
 
         letras = list(texto)
@@ -256,12 +251,7 @@ end
                     final.append(str(cadena))
 
         final = (self.limpiar_texto(str(final))).replace(" ", "")
-        with open("src/markov.txt", "w", encoding="utf-8") as f:
-            f.write(texto)
-        
-        doc = open("src/markov.txt", "rb")
-        chat_id = update.message.chat.id
-        update.message.bot.sendDocument(chat_id=chat_id, document=doc, timeout=300)
+        update.message.reply_text(f"Markov K \= 0: \n\n{final}", parse_mode="MarkdownV2")
         return ConversationHandler.END
         
     def limpiar_texto(self, text: str):
