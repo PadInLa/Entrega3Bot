@@ -4,7 +4,7 @@ from Bot import Bot
 
 
 # load_dotenv()
-TOKEN = "2145063102:AAGvc8R9Q7ifSHBhd2OIMPQ0jIN1u78wmy8"
+TOKEN = "Token"
 
 def cancel(update, context):
     return ConversationHandler.END
